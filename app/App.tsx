@@ -15,6 +15,7 @@ export default function App() {
         <Tab.Navigator
             screenOptions={({ route }) => ({
                 headerShown: false,
+                tabBarHideOnKeyboard: true,
                 tabBarIcon: ({ color, size }) => {
                     let iconName: keyof typeof Ionicons.glyphMap = "home";
                     if (route.name === "Home") {

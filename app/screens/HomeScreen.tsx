@@ -1,12 +1,15 @@
+import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import React, { useState, useRef } from "react";
 import {
     View,
     Text,
     TextInput,
-    TouchableOpacity,
+    Pressable,
     ActivityIndicator,
     Alert,
     StyleSheet,
+    TouchableOpacity,
+    Keyboard,
 } from "react-native";
 import MapView, {
     Marker,
@@ -39,8 +42,32 @@ const HomeScreen = () => {
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
     });
+    const [transportMode, setTransportMode] = useState<
+        "car" | "bus" | "bike" | "walking"
+    >("car");
+    const [infoPanelVisible, setInfoPanelVisible] = useState(true);
+
+    const modeEmissions = {
+        car: 120,
+        bus: 80,
+        bike: 50,
+        walking: 0,
+    };
 
     const mapRef = useRef<MapView | null>(null);
+    const updateTransportMode = (mode: "car" | "bus" | "bike" | "walking") => {
+        setTransportMode(mode);
+        if (distance !== null) {
+            const newEmissions = distance * (modeEmissions[mode] / 1000);
+            setEmissions(newEmissions);
+            setGreenCoins(Math.floor(greenCoinsEarned(newEmissions)));
+        }
+    };
+
+    const greenCoinsEarned = (emissions: number) => {
+        let maxEmission = (distance ?? 0) * (modeEmissions["car"] / 1000);
+        return (maxEmission - emissions) * 2;
+    };
 
     const fetchCoordinates = async (location: string) => {
         try {
@@ -82,6 +109,7 @@ const HomeScreen = () => {
         }
 
         setLoading(true);
+        hideKeyboard();
 
         const startLocation = await fetchCoordinates(start);
         const destinationLocation = await fetchCoordinates(destination);
@@ -96,7 +124,7 @@ const HomeScreen = () => {
 
         try {
             const routeResponse = await fetch(
-                `http://router.project-osrm.org/route/v1/driving/${startLocation.lon},${startLocation.lat};${destinationLocation.lon},${destinationLocation.lat}?overview=full&geometries=geojson`
+                `http://router.project-osrm.org/route/v1/${transportMode}/${startLocation.lon},${startLocation.lat};${destinationLocation.lon},${destinationLocation.lat}?overview=full&geometries=geojson`
             );
             const routeData = await routeResponse.json();
             if (routeData.routes.length === 0) {
@@ -114,7 +142,8 @@ const HomeScreen = () => {
             setTimeout(() => setRoute(coordinates), 300);
 
             const routeDistance = routeData.routes[0].distance / 1000;
-            const emissionEstimate = routeDistance * 0.12;
+            const emissionEstimate =
+                routeDistance * (modeEmissions[transportMode] / 1000);
             const earnedGreenCoins = Math.max(0, (5 - emissionEstimate) * 2);
 
             setDistance(routeDistance);
@@ -125,6 +154,7 @@ const HomeScreen = () => {
                 edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
                 animated: true,
             });
+            setInfoPanelVisible(true);
         } catch (error) {
             Alert.alert("Error", "Failed to fetch route.");
         } finally {
@@ -156,6 +186,7 @@ const HomeScreen = () => {
                 provider={PROVIDER_DEFAULT}
                 style={styles.map}
                 region={region}
+                pitchEnabled={true}
                 onRegionChangeComplete={setRegion}
             >
                 {startCoords && (
@@ -201,6 +232,7 @@ const HomeScreen = () => {
                 />
                 <TouchableOpacity
                     style={styles.searchButton}
+                    activeOpacity={0.8}
                     onPress={fetchRoute}
                 >
                     <Text style={styles.searchButtonText}>Go</Text>
@@ -209,16 +241,16 @@ const HomeScreen = () => {
 
             {/* Zoom Controls (Bottom Right) */}
             <View style={styles.zoomControls}>
-                <TouchableOpacity style={styles.zoomButton} onPress={zoomIn}>
+                <Pressable style={styles.zoomButton} onPress={zoomIn}>
                     <Text style={styles.zoomText}>+</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.zoomButton} onPress={zoomOut}>
+                </Pressable>
+                <Pressable style={styles.zoomButton} onPress={zoomOut}>
                     <Text style={styles.zoomText}>-</Text>
-                </TouchableOpacity>
+                </Pressable>
             </View>
 
             {/* Info Panel */}
-            {distance !== null && (
+            {infoPanelVisible && distance !== null && (
                 <View style={styles.bottomSheet}>
                     <View style={styles.infoRow}>
                         <Text style={styles.infoText}>
@@ -231,6 +263,54 @@ const HomeScreen = () => {
                             🎉 {greenCoins?.toFixed(1)} Green Coins
                         </Text>
                     </View>
+                    <View style={styles.tabContainer}>
+                        <TouchableOpacity
+                            style={[
+                                styles.tab,
+                                transportMode === "car" && styles.activeTab,
+                            ]}
+                            onPress={() => updateTransportMode("car")}
+                        >
+                            <Ionicons name="car" size={20} color="black" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.tab,
+                                transportMode === "bus" && styles.activeTab,
+                            ]}
+                            onPress={() => updateTransportMode("bus")}
+                        >
+                            <Ionicons name="bus" size={20} color="black" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.tab,
+                                transportMode === "bike" && styles.activeTab,
+                            ]}
+                            onPress={() => updateTransportMode("bike")}
+                        >
+                            <FontAwesome
+                                name="motorcycle"
+                                size={20}
+                                color={"black"}
+                            ></FontAwesome>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.tab,
+                                transportMode === "walking" && styles.activeTab,
+                            ]}
+                            onPress={() => updateTransportMode("walking")}
+                        >
+                            <Ionicons name="walk" size={20} color="black" />
+                        </TouchableOpacity>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.closeButton}
+                        onPress={() => setInfoPanelVisible(false)}
+                    >
+                        <Text style={styles.closeButtonText}>Close</Text>
+                    </TouchableOpacity>
                 </View>
             )}
 
@@ -277,24 +357,34 @@ const styles = StyleSheet.create({
     map: { flex: 1 },
     zoomControls: {
         position: "absolute",
-        bottom: 20,
+        top: 80,
         right: 20,
         alignItems: "center",
     },
     zoomButton: {
         backgroundColor: "white",
-        padding: 8,
+        padding: 5,
         borderRadius: 5,
         marginBottom: 5,
         elevation: 3,
+        width: 30,
+        height: 30,
+        justifyContent: "center",
+        alignItems: "center",
     },
-    zoomText: { fontSize: 18, fontWeight: "bold" },
+    zoomText: {
+        fontSize: 18,
+        fontWeight: "bold",
+        width: 30,
+        height: 30,
+        textAlign: "center",
+    },
     bottomSheet: {
-        backgroundColor: "rgba(0,0,0,0.7)",
+        backgroundColor: "white",
         padding: 10,
         borderRadius: 10,
         position: "absolute",
-        bottom: 80,
+        bottom: 10,
         left: 20,
         right: 20,
         elevation: 3,
@@ -306,11 +396,45 @@ const styles = StyleSheet.create({
     infoText: {
         fontSize: 16,
         fontWeight: "bold",
-        color: "white",
+        color: "black",
         textAlign: "center",
         flex: 1,
     },
+    tabContainer: {
+        flexDirection: "row",
+        justifyContent: "space-around",
+        marginTop: 10,
+    },
+    tab: {
+        flex: 1,
+        padding: 10,
+        borderRadius: 6,
+        alignItems: "center",
+        backgroundColor: "#e8e8e8",
+        marginHorizontal: 5,
+        height: 40,
+        justifyContent: "center",
+        width: 60,
+    },
+    activeTab: {
+        backgroundColor: "#007AFF",
+    },
+    tabText: {
+        color: "black",
+        fontWeight: "bold",
+    },
+    closeButton: {
+        backgroundColor: "#FF3B30",
+        padding: 10,
+        borderRadius: 6,
+        alignItems: "center",
+        marginTop: 10,
+    },
+    closeButtonText: { color: "white", fontWeight: "bold" },
     loader: { position: "absolute", top: "50%", left: "50%" },
 });
 
 export default HomeScreen;
+function hideKeyboard() {
+    Keyboard.dismiss();
+}
