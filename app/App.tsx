@@ -1,7 +1,7 @@
 import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { StyleSheet } from "react-native";
 import HomeScreen from "./screens/HomeScreen";
 import ComparisonScreen from "./screens/ComparisonScreen";
 import RewardsScreen from "./screens/RewardsScreen";
@@ -16,23 +16,26 @@ export default function App() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarHideOnKeyboard: true,
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
           if (route.name === "Home") {
-            iconName = "home";
+            iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Comparison") {
-            iconName = "stats-chart";
+            iconName = focused ? "stats-chart" : "stats-chart-outline";
           } else if (route.name === "Rewards") {
-            iconName = "trophy";
+            iconName = focused ? "trophy" : "trophy-outline";
           } else if (route.name === "History") {
-            iconName = "time";
+            iconName = focused ? "time" : "time-outline";
           } else if (route.name === "Profile") {
-            iconName = "person";
+            iconName = focused ? "person" : "person-outline";
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "green",
-        tabBarInactiveTintColor: "gray",
+        tabBarActiveTintColor: "#4CAF50", // Green color for active tab
+        tabBarInactiveTintColor: "#9E9E9E", // Gray color for inactive tab
+        tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarItemStyle: styles.tabBarItem,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -43,3 +46,26 @@ export default function App() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    backgroundColor: "#f5f5f5f5f5f5", // White background for the tab bar
+    borderTopWidth: 0,
+    elevation: 10, // Shadow for Android
+    shadowColor: "#000", // Shadow for iOS
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    height: 68, // Slightly taller tab bar
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+    marginBottom: 4, // Space between icon and label
+  },
+  tabBarItem: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 8, // Padding for each tab item
+  },
+});
