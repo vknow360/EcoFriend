@@ -1,13 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-const RewardsScreen = () => {
+const HistoryScreen = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Green Coins</Text>
-      <Text style={styles.info}>Earn rewards for eco-friendly choices</Text>
+      <Text style={styles.title}>CO₂ Emission History</Text>
+      <Text style={styles.info}>Track your monthly and yearly emissions</Text>
 
-      {/* Future: Display earned Green Coins and redemption options */}
+      {/* Future: Display charts and historical data */}
     </View>
   );
 };
@@ -30,4 +30,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RewardsScreen;
+export default HistoryScreen;

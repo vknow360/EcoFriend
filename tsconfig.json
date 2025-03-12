@@ -3,15 +3,18 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
-    "expo-env.d.ts"
+    "expo-env.d.ts",
+    "app/App.tsx",
+    "app/screens/ComparisonScreen.jsx",
+    "app/screens/HistoryScreen.jsx",
+    "app/screens/HomeScreen.jsx",
+    "app/screens/RewardsScreen.jsx"
   ]
 }
