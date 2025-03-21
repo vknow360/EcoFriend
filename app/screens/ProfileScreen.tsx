@@ -41,7 +41,7 @@ const ProfileScreen = () => {
             value={darkMode}
             onValueChange={setDarkMode}
             trackColor={{ false: "#e8e8e8", true: "#007AFF" }}
-            thumbColor={darkMode ? "#fff" : "#f4f3f4"}
+            thumbColor={darkMode ? "#f5f5f5" : "#f4f3f4"}
           />
         </View>
         <View style={styles.settingRow}>
@@ -52,10 +52,14 @@ const ProfileScreen = () => {
             value={notifications}
             onValueChange={setNotifications}
             trackColor={{ false: "#e8e8e8", true: "#007AFF" }}
-            thumbColor={notifications ? "#fff" : "#f4f3f4"}
+            thumbColor={notifications ? "#f5f5f5" : "#f4f3f4"}
           />
         </View>
       </View>
+
+      <TouchableOpacity style={styles.logoutButton}>
+        <Text style={styles.logoutButtonText}>Log Out</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -148,6 +152,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#333",
+  },
+  logoutButton: {
+    backgroundColor: "#FF3B30",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  logoutButtonText: {
+    color: "white",
+    fontWeight: "600",
   },
 });
 
